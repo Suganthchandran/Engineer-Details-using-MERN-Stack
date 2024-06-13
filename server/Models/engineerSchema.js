@@ -21,7 +21,7 @@ const engineerSchema = new Schema({
   },
   gender: {
     type: String,
-    enum: ['Male', 'Female', 'Other'],
+    enum: ['male', 'female', 'Other'],
     required: true,
   },
   phone: {
@@ -31,7 +31,6 @@ const engineerSchema = new Schema({
   email: {
     type: String,
     required: true,
-    unique: true,
   },
   qualification: {
     type: String,

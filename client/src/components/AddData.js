@@ -1,7 +1,5 @@
-import React, { useState } from 'react'
-import { NavLink } from 'react-router-dom'
-
-
+import React, { useState } from 'react';
+import { NavLink } from 'react-router-dom';
 
 export const AddData = () => {
     const [formData, setFormData] = useState({
@@ -47,10 +45,39 @@ export const AddData = () => {
             speciality: '',
         }));
     };
+
+    const addinput = async (e) => {
+        e.preventDefault();
+
+        const formDataToSend = new FormData();
+        for (const key in formData) {
+            formDataToSend.append(key, formData[key]);
+        }
+
+        try {
+            const res = await fetch("http://localhost:5000/add-data", {
+                method: "POST",
+                body: formDataToSend
+            });
+
+            if (res.status === 201) {
+                alert("Data Added");
+                console.log("Data Added");
+            } else {
+                const data = await res.json();
+                alert(`Error: ${data.message}`);
+                console.log("Error", data);
+            }
+        } catch (error) {
+            alert(`Error: ${error.message}`);
+            console.log("Error", error);
+        }
+    };
+
     return (
         <div className='container'>
             <NavLink to="/">Home</NavLink>
-            <form>
+            <form onSubmit={addinput}>
                 <div className="mb-3">
                     <label htmlFor="employeeId" className="form-label">Employee ID</label>
                     <input type="text" className="form-control" id="employeeId" name="employeeId" value={formData.employeeId} onChange={handleChange} required />
