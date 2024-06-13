@@ -1,7 +1,11 @@
-import React, { useState } from 'react'
-import { NavLink } from 'react-router-dom'
+import React, { useEffect, useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 
 export const EditData = () => {
+
+    const navigate = useNavigate()
+
     const [formData, setFormData] = useState({
         employeeId: '',
         employeePhoto: null,
@@ -14,6 +18,65 @@ export const EditData = () => {
         department: '',
         speciality: '',
     });
+
+    const { id } = useParams();
+    console.log(id);
+
+    const getdata = async () => {
+        try {
+            const res = await fetch(`http://localhost:5000/getuser/${id}`, {
+                method: "GET"
+            });
+            const data = await res.json();
+            if (res.status === 201) {
+                setFormData(data);
+                console.log("Got Data");
+            } else {
+                console.log("Error", data);
+            }
+        } catch (error) {
+            alert(`Error: ${error.message}`);
+            console.log("Error", error);
+        }
+    };
+
+    const updatedata = async (e) => {
+        e.preventDefault();
+
+        const formDataToSend = new FormData();
+        for (const key in formData) {
+            formDataToSend.append(key, formData[key]);
+        }
+
+        if (formData.employeePhoto instanceof File) {
+            formDataToSend.append('employeePhoto', formData.employeePhoto);
+        }
+
+        try {
+            const res = await fetch(`http://localhost:5000/updateuser/${id}`, {
+                method: "PATCH",
+                body: formDataToSend
+            });
+
+            if (res.status === 201) {
+                alert("Data Updated");
+                console.log("Data Updated");
+                navigate("/");
+
+            } else {
+                const data = await res.json();
+                alert(`Error: ${data.message}`);
+                console.log("Error", data);
+            }
+        } catch (error) {
+            alert(`Error: ${error.message}`);
+            console.log("Error", error);
+        }
+    };
+
+    useEffect(() => {
+        getdata();
+    }, []);
 
     const specialities = {
         hr: ['Recruitment', 'Employee Relations', 'Payroll'],
@@ -45,6 +108,7 @@ export const EditData = () => {
             speciality: '',
         }));
     };
+
     return (
         <div className='container'>
             <NavLink to="/">Home</NavLink>
@@ -55,7 +119,7 @@ export const EditData = () => {
                 </div>
                 <div className="mb-3">
                     <label htmlFor="employeePhoto" className="form-label">Employee Photo</label>
-                    <input type="file" className="form-control" id="employeePhoto" name="employeePhoto" onChange={handleFileChange} required />
+                    <input type="file" className="form-control" id="employeePhoto" name="employeePhoto" onChange={handleFileChange} />
                 </div>
                 <div className="mb-3">
                     <label htmlFor="name" className="form-label">Name</label>
@@ -105,8 +169,8 @@ export const EditData = () => {
                         ))}
                     </select>
                 </div>
-                <button type="submit" className="btn btn-primary">Submit</button>
+                <button type="submit" onClick={updatedata} className="btn btn-primary">Submit</button>
             </form>
         </div>
-    )
-}
+    );
+};

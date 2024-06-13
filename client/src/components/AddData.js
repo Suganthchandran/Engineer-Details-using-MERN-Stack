@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 
 export const AddData = () => {
+
+    const navigate = useNavigate()
+
     const [formData, setFormData] = useState({
         employeeId: '',
         employeePhoto: null,
@@ -63,6 +66,7 @@ export const AddData = () => {
             if (res.status === 201) {
                 alert("Data Added");
                 console.log("Data Added");
+                navigate("/");
             } else {
                 const data = await res.json();
                 alert(`Error: ${data.message}`);
