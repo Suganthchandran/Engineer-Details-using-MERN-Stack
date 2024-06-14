@@ -113,5 +113,19 @@ router.delete("/deleteuser/:id", async (req, res) => {
 });
 
 
+router.get('/search', async (req, res) => {
+    try {
+        const { query } = req.query;
+        const searchQuery = new RegExp(query, 'i'); 
+        const searchResults = await users.find({ speciality: searchQuery });
+        return res.status(200).json(searchResults);
+    } catch (error) {
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+
+
 
 module.exports = router;
