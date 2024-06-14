@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { NavLink, useNavigate } from 'react-router-dom';
-import { useParams } from 'react-router-dom';
+import { NavLink, useNavigate, useParams } from 'react-router-dom';
 
 export const EditData = () => {
-
-    const navigate = useNavigate()
+    const navigate = useNavigate();
+    const { id } = useParams();
 
     const [formData, setFormData] = useState({
         employeeId: '',
@@ -19,37 +18,42 @@ export const EditData = () => {
         speciality: '',
     });
 
-    const { id } = useParams();
-    console.log(id);
-
-    const getdata = async () => {
-        try {
-            const res = await fetch(`http://localhost:5000/getuser/${id}`, {
-                method: "GET"
-            });
-            const data = await res.json();
-            if (res.status === 201) {
-                setFormData(data);
-                console.log("Got Data");
-            } else {
-                console.log("Error", data);
-            }
-        } catch (error) {
-            alert(`Error: ${error.message}`);
-            console.log("Error", error);
-        }
+    const specialities = {
+        hr: ['Recruitment', 'Employee Relations', 'Payroll'],
+        it: ['Software Development', 'Network Administration', 'Cyber Security'],
+        marketing: ['Digital Marketing', 'Content Creation', 'SEO'],
+        sales: ['Retail Sales', 'B2B Sales', 'Account Management'],
     };
+
+    useEffect(() => {
+        const getdata = async () => {
+            try {
+                const res = await fetch(`http://localhost:5000/getuser/${id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setFormData(data);
+                    console.log("Got Data");
+                } else {
+                    console.log("Error", res.status);
+                }
+            } catch (error) {
+                console.error("Error fetching data:", error);
+            }
+        };
+
+        getdata();
+    }, [id]);
 
     const updatedata = async (e) => {
         e.preventDefault();
 
         const formDataToSend = new FormData();
         for (const key in formData) {
-            formDataToSend.append(key, formData[key]);
-        }
-
-        if (formData.employeePhoto instanceof File) {
-            formDataToSend.append('employeePhoto', formData.employeePhoto);
+            if (key === 'employeePhoto' && formData[key] instanceof File) {
+                formDataToSend.append('employeePhoto', formData[key]);
+            } else {
+                formDataToSend.append(key, formData[key]);
+            }
         }
 
         try {
@@ -58,7 +62,7 @@ export const EditData = () => {
                 body: formDataToSend
             });
 
-            if (res.status === 201) {
+            if (res.ok) {
                 alert("Data Updated");
                 console.log("Data Updated");
                 navigate("/");
@@ -70,31 +74,20 @@ export const EditData = () => {
             }
         } catch (error) {
             alert(`Error: ${error.message}`);
-            console.log("Error", error);
+            console.error("Error updating data:", error);
         }
-    };
-
-    useEffect(() => {
-        getdata();
-    }, []);
-
-    const specialities = {
-        hr: ['Recruitment', 'Employee Relations', 'Payroll'],
-        it: ['Software Development', 'Network Administration', 'Cyber Security'],
-        marketing: ['Digital Marketing', 'Content Creation', 'SEO'],
-        sales: ['Retail Sales', 'B2B Sales', 'Account Management'],
     };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData((prevData) => ({
+        setFormData(prevData => ({
             ...prevData,
             [name]: value,
         }));
     };
 
     const handleFileChange = (e) => {
-        setFormData((prevData) => ({
+        setFormData(prevData => ({
             ...prevData,
             employeePhoto: e.target.files[0],
         }));
@@ -102,7 +95,7 @@ export const EditData = () => {
 
     const handleDepartmentChange = (e) => {
         const { value } = e.target;
-        setFormData((prevData) => ({
+        setFormData(prevData => ({
             ...prevData,
             department: value,
             speciality: '',
@@ -164,7 +157,7 @@ export const EditData = () => {
                     <label htmlFor="speciality" className="form-label">Speciality</label>
                     <select className="form-select" id="speciality" name="speciality" value={formData.speciality} onChange={handleChange} required>
                         <option value="" disabled>Select Speciality</option>
-                        {formData.department && specialities[formData.department].map((speciality) => (
+                        {formData.department && specialities[formData.department].map(speciality => (
                             <option key={speciality} value={speciality.toLowerCase().replace(/\s+/g, '-')}>{speciality}</option>
                         ))}
                     </select>
